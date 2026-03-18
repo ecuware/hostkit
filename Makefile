@@ -26,12 +26,14 @@ run: build
 test:
 	go test -v ./...
 
+# Clean build artifacts
 clean:
 	rm -f $(BINARY_NAME)
 	rm -rf dist/
 
 # Install locally
 install: build
+	sudo cp $(BINARY_NAME) /usr/local/bin/
 
 # Run linter
 lint:
