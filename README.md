@@ -7,8 +7,6 @@
 
 > **All-in-one hosting server management toolkit** written in Go. Install, configure, and manage hosting panels, databases, web servers, and security tools with an interactive TUI.
 
-![HostKit Demo](https://via.placeholder.com/800x400/2d3748/ffffff?text=HostKit+TUI+Demo)
-
 ## ✨ Features
 
 🎯 **Interactive TUI** - Beautiful terminal interface powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea)  
