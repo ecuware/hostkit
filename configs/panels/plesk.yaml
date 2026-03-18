@@ -1,0 +1,37 @@
+id: plesk
+category: panel
+name: "Plesk"
+description: "Powerful web hosting and server management panel"
+icon: "🅿️"
+
+version:
+  current: "18.0"
+  source:
+    type: "static"
+
+requirements:
+  os:
+    ubuntu: ["20.04", "22.04"]
+    debian: ["11", "12"]
+    centos: ["7", "8"]
+  min_ram: "1GB"
+  min_disk: "20GB"
+  install_size: "3GB"
+  estimated_time: "10-15 minutes"
+  ports: [8443, 8880, 443, 80]
+
+install:
+  method: "shell"
+  script: |
+    wget https://autoinstall.plesk.com/one-click-installer
+    chmod +x one-click-installer
+    ./one-click-installer
+
+license:
+  required: true
+  type: "commercial"
+  trial: true
+
+support:
+  docs: "https://docs.plesk.com/"
+  forum: "https://talk.plesk.com/"

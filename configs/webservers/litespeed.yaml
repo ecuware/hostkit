@@ -1,0 +1,49 @@
+id: litespeed
+category: webserver
+name: "OpenLiteSpeed"
+description: "High-performance, lightweight, open source HTTP server"
+icon: "⚡"
+
+version:
+  current: "1.8"
+  source:
+    type: "github_release"
+    owner: "litespeedtech"
+    repo: "openlitespeed"
+
+requirements:
+  install_size: "150MB"
+  estimated_time: "1-2 minutes"
+  os:
+    ubuntu: ["20.04", "22.04"]
+    centos: ["7", "8", "9"]
+    debian: ["11", "12"]
+  ports: [7080, 8088, 443, 80]
+
+install:
+  method: "shell"
+  script: |
+    wget https://openlitespeed.org/packages/openlitespeed-{{ .Version }}.tgz
+    tar xzf openlitespeed-{{ .Version }}.tgz
+    cd openlitespeed
+    ./install.sh
+
+config:
+  files:
+    - path: "/usr/local/lsws/conf/httpd_config.conf"
+      description: "Main server configuration"
+    - path: "/usr/local/lsws/admin/conf/admin_config.conf"
+      description: "Admin panel configuration"
+
+commands:
+  start: "/usr/local/lsws/bin/lswsctrl start"
+  stop: "/usr/local/lsws/bin/lswsctrl stop"
+  restart: "/usr/local/lsws/bin/lswsctrl restart"
+  status: "/usr/local/lsws/bin/lswsctrl status"
+
+license:
+  required: false
+  type: "gpl"
+
+support:
+  docs: "https://docs.litespeedtech.com/"

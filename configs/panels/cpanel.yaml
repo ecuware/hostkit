@@ -1,0 +1,41 @@
+id: cpanel
+category: panel
+name: "cPanel & WHM"
+description: "Industry-standard web hosting control panel"
+icon: "🅲️"
+
+version:
+  current: "124"
+  source:
+    type: "static"
+
+requirements:
+  os:
+    centos: ["7", "8"]
+    almalinux: ["8"]
+  min_ram: "2GB"
+  min_disk: "40GB"
+  install_size: "5GB"
+  estimated_time: "15-20 minutes"
+  ports: [2082, 2083, 2086, 2087, 2095, 2096]
+  architecture: ["amd64"]
+
+install:
+  method: "shell"
+  script: |
+    cd /home && curl -o latest -L https://securedownloads.cpanel.net/latest
+    sh latest
+  pre_check:
+    - command: "hostname -f"
+      error_msg: "A fully qualified domain name (FQDN) is required"
+    - command: "which perl"
+      error_msg: "Perl is required"
+
+license:
+  required: true
+  type: "commercial"
+  trial: true
+
+support:
+  docs: "https://docs.cpanel.net/"
+  issues: "https://support.cpanel.net/"

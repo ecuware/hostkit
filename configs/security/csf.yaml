@@ -1,0 +1,53 @@
+id: csf
+category: security
+name: "ConfigServer Security & Firewall"
+description: "Stateful packet inspection firewall with login failure daemon"
+icon: "🔥"
+
+version:
+  current: "14.20"
+  source:
+    type: "url_scrape"
+    url: "https://download.configserver.com/csf/"
+    regex: "csf-(\\d+\\.\\d+)"
+
+requirements:
+  install_size: "20MB"
+  estimated_time: "30 seconds"
+  min_ram: "256MB"
+  os:
+    ubuntu: ["18.04", "20.04", "22.04"]
+    centos: ["7", "8", "9"]
+    debian: ["10", "11", "12"]
+
+install:
+  method: "shell"
+  script: |
+    cd /usr/src
+    rm -fv csf.tgz
+    wget https://download.configserver.com/csf/csf.tgz
+    tar -xzf csf.tgz
+    cd csf
+    sh install.sh
+    csf -r
+
+config:
+  files:
+    - path: "/etc/csf/csf.conf"
+      description: "Main CSF configuration"
+    - path: "/etc/csf/csf.allow"
+      description: "Allowed IPs"
+    - path: "/etc/csf/csf.deny"
+      description: "Denied IPs"
+
+commands:
+  restart: "csf -r"
+  stop: "csf -x"
+  start: "csf -e"
+  status: "csf -l"
+
+uninstall:
+  command: "cd /etc/csf && sh uninstall.sh"
+
+support:
+  docs: "https://download.configserver.com/csf/readme.txt"

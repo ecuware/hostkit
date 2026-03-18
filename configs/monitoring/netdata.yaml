@@ -1,0 +1,32 @@
+id: netdata
+category: monitoring
+name: "Netdata"
+description: "Real-time performance monitoring and visualization"
+icon: "📊"
+
+version:
+  current: "1.44"
+  source:
+    type: "github_release"
+    owner: "netdata"
+    repo: "netdata"
+
+requirements:
+  install_size: "150MB"
+  estimated_time: "1 minute"
+  min_ram: "512MB"
+  ports: [19999]
+
+install:
+  method: "shell"
+  script: |
+    wget -O /tmp/netdata-kickstart.sh https://get.netdata.cloud/kickstart.sh
+    sh /tmp/netdata-kickstart.sh --stable-channel --disable-telemetry
+
+config:
+  files:
+    - path: "/etc/netdata/netdata.conf"
+      description: "Netdata configuration"
+
+support:
+  docs: "https://learn.netdata.cloud/"

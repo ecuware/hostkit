@@ -1,0 +1,33 @@
+id: certbot
+category: security
+name: "Certbot"
+description: "Free, automated SSL certificate authority client"
+icon: "🔒"
+
+version:
+  current: "2.0"
+  source:
+    type: "github_release"
+    owner: "certbot"
+    repo: "certbot"
+
+install:
+  ubuntu:
+    method: "apt"
+    packages:
+      - certbot
+      - python3-certbot-nginx
+      - python3-certbot-apache
+
+commands:
+  get_cert: "certbot certonly --nginx -d {domain}"
+  renew: "certbot renew"
+  auto_renew: "certbot renew --dry-run"
+
+config:
+  files:
+    - path: "/etc/letsencrypt/renewal/{domain}.conf"
+      description: "Certificate renewal configuration"
+
+support:
+  docs: "https://eff-certbot.readthedocs.io/"

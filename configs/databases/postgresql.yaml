@@ -1,0 +1,43 @@
+id: postgresql
+category: database
+name: "PostgreSQL"
+description: "Advanced open source relational database"
+icon: "🐘"
+
+version:
+  current: "16"
+  source:
+    type: "url_scrape"
+    url: "https://www.postgresql.org/docs/current/index.html"
+    regex: "PostgreSQL (\\d+\\.\\d+)"
+
+requirements:
+  install_size: "300MB"
+  estimated_time: "1-2 minutes"
+  min_ram: "1GB"
+  ports: [5432]
+
+install:
+  ubuntu:
+    method: "apt"
+    repositories:
+      - name: "postgresql"
+        url: "http://apt.postgresql.org/pub/repos/apt {{ .Codename }}-pgdg main"
+        key: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+    packages:
+      - postgresql-{{ .MajorVersion }}
+      - postgresql-contrib-{{ .MajorVersion }}
+    post_install: |
+      systemctl enable postgresql
+      systemctl start postgresql
+
+config:
+  files:
+    - path: "/etc/postgresql/{{ .MajorVersion }}/main/postgresql.conf"
+      template: "postgresql.conf"
+
+uninstall:
+  command: |
+    systemctl stop postgresql
+    apt-get remove -y postgresql-*
+    rm -rf /var/lib/postgresql /etc/postgresql

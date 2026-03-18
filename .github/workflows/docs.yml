@@ -1,0 +1,99 @@
+name: Deploy Documentation and Update Changelog
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+# Allow this job to push to the repository
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Update Changelog
+  update-changelog:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Generate Changelog
+      run: |
+        echo "# Changelog" > CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "All notable changes to this project will be documented in this file." >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)," >> CHANGELOG.md
+        echo "and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)." >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        
+        # Get latest tag
+        latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        echo "## [$latest_tag] - $(date +%Y-%m-%d)" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        
+        # Get commits since last tag
+        git log $latest_tag..HEAD --pretty=format:"- %s (%h)" --no-merges >> CHANGELOG.md || echo "- Initial release" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        
+        # Add all previous versions
+        git tag -l | sort -V -r | while read tag; do
+          echo "## [$tag] - $(git log -1 --format=%ai $tag | cut -d' ' -f1)" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          prev_tag=$(git tag -l | sort -V | grep -B1 "^$tag$" | head -1)
+          if [ -z "$prev_tag" ] || [ "$prev_tag" = "$tag" ]; then
+            git log $tag --pretty=format:"- %s (%h)" --no-merges >> CHANGELOG.md
+          else
+            git log $prev_tag..$tag --pretty=format:"- %s (%h)" --no-merges >> CHANGELOG.md
+          fi
+          echo "" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+        done
+
+    - name: Commit Changelog
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add CHANGELOG.md
+        git diff --staged --quiet || git commit -m "docs: update changelog [skip ci]"
+        git push || echo "No changes to push"
+
+  # Build and Deploy GitHub Pages
+  build-and-deploy:
+    needs: update-changelog
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Copy README to docs
+      run: |
+        cp README.md docs/index.md
+        cp CHANGELOG.md docs/CHANGELOG.md || echo "No changelog yet"
+
+    - name: Build with Jekyll
+      uses: actions/jekyll-build-pages@v1
+      with:
+        source: ./docs
+        destination: ./_site
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4

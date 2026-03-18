@@ -1,0 +1,48 @@
+id: cloudpanel
+category: panel
+name: "CloudPanel"
+description: "Free and modern server control panel for PHP applications"
+icon: "☁️"
+
+version:
+  current: "2.4"
+  source:
+    type: "github_release"
+    owner: "cloudpanel-io"
+    repo: "cloudpanel-ce"
+
+requirements:
+  os:
+    ubuntu: ["22.04", "24.04"]
+    debian: ["11", "12"]
+  min_ram: "1GB"
+  min_disk: "10GB"
+  install_size: "1GB"
+  estimated_time: "3-5 minutes"
+  ports: [8443, 443, 80, 22]
+
+install:
+  method: "shell"
+  script: |
+    apt update && apt -y install curl wget sudo
+    curl -sSL https://installer.cloudpanel.io/ce/v2/install.sh | sudo bash
+
+config:
+  files:
+    - path: "/etc/cloudpanel/config.json"
+      description: "CloudPanel configuration"
+    - path: "/etc/nginx/nginx.conf"
+      description: "Nginx configuration"
+
+commands:
+  restart: "systemctl restart cloudpanel"
+  status: "systemctl status cloudpanel"
+
+license:
+  required: false
+  type: "mit"
+
+support:
+  docs: "https://www.cloudpanel.io/docs/"
+  github: "https://github.com/cloudpanel-io/cloudpanel-ce"
+  issues: "https://github.com/cloudpanel-io/cloudpanel-ce/issues"

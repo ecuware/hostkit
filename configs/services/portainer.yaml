@@ -1,0 +1,33 @@
+id: portainer
+category: services
+name: "Portainer"
+description: "Lightweight management UI for Docker"
+icon: "🚢"
+
+version:
+  current: "2.19"
+  source:
+    type: "github_release"
+    owner: "portainer"
+    repo: "portainer"
+
+requirements:
+  install_size: "200MB"
+  estimated_time: "1 minute"
+  dependencies:
+    - docker
+  ports: [9000, 9443, 8000]
+
+install:
+  method: "shell"
+  script: |
+    docker volume create portainer_data
+    docker run -d -p 8000:8000 -p 9443:9443 -p 9000:9000 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:latest
+
+commands:
+  start: "docker start portainer"
+  stop: "docker stop portainer"
+  remove: "docker rm -f portainer"
+
+support:
+  docs: "https://docs.portainer.io/"

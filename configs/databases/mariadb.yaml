@@ -1,0 +1,52 @@
+id: mariadb
+category: database
+name: "MariaDB"
+description: "MySQL-compatible open source database server"
+icon: "🐬"
+
+version:
+  current: "10.11"
+  source:
+    type: "url_scrape"
+    url: "https://mariadb.org/download/"
+    regex: "MariaDB (\\d+\\.\\d+)"
+
+requirements:
+  min_ram: "512MB"
+  install_size: "200MB"
+  estimated_time: "1-2 minutes"
+  ports: [3306]
+
+install:
+  ubuntu:
+    method: "apt"
+    repositories:
+      - name: "mariadb"
+        url: "https://mirror.mariadb.org/repo/{{ .Version }}/ubuntu {{ .Codename }} main"
+        key: "https://mariadb.org/mariadb_release_signing_key.asc"
+    packages:
+      - mariadb-server
+      - mariadb-client
+    post_install: |
+      mysql_secure_installation --use-default
+      systemctl enable mariadb
+      
+  centos:
+    method: "yum"
+    repositories:
+      - name: "mariadb"
+        url: "https://mirror.mariadb.org/yum/{{ .Version }}/centos{{ .VersionMajor }}/amd64"
+    packages:
+      - MariaDB-server
+      - MariaDB-client
+
+config:
+  files:
+    - path: "/etc/mysql/mariadb.conf.d/50-server.cnf"
+      template: "mariadb-server.cnf"
+
+uninstall:
+  command: |
+    systemctl stop mariadb
+    apt-get remove -y mariadb-*
+    rm -rf /var/lib/mysql /etc/mysql

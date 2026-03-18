@@ -1,0 +1,43 @@
+id: mysql
+category: database
+name: "MySQL"
+description: "World's most popular open source database"
+icon: "🐬"
+
+version:
+  current: "8.0"
+  source:
+    type: "url_scrape"
+    url: "https://dev.mysql.com/downloads/mysql/"
+    regex: "MySQL Community Server (\\d+\\.\\d+)"
+
+requirements:
+  install_size: "400MB"
+  estimated_time: "1-2 minutes"
+  min_ram: "1GB"
+  ports: [3306]
+
+install:
+  ubuntu:
+    method: "apt"
+    repositories:
+      - name: "mysql"
+        url: "http://repo.mysql.com/apt/ubuntu {{ .Codename }} mysql-8.0"
+        key: "https://repo.mysql.com/RPM-GPG-KEY-mysql-2023"
+    packages:
+      - mysql-server
+      - mysql-client
+    post_install: |
+      mysql_secure_installation
+      systemctl enable mysql
+
+config:
+  files:
+    - path: "/etc/mysql/mysql.conf.d/mysqld.cnf"
+      template: "mysqld.cnf"
+
+uninstall:
+  command: |
+    systemctl stop mysql
+    apt-get remove -y mysql-*
+    rm -rf /var/lib/mysql /etc/mysql

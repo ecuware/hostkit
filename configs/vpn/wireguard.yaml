@@ -1,0 +1,43 @@
+id: wireguard
+category: vpn
+name: "WireGuard"
+description: "Fast, modern, secure VPN tunnel"
+icon: "🔒"
+
+version:
+  current: "1.0"
+  source:
+    type: "static"
+
+requirements:
+  install_size: "20MB"
+  estimated_time: "30 seconds"
+  os:
+    ubuntu: ["20.04", "22.04", "24.04"]
+    debian: ["11", "12"]
+    centos: ["7", "8", "9"]
+  ports: [51820]
+
+install:
+  ubuntu:
+    method: "apt"
+    packages:
+      - wireguard
+      - wireguard-tools
+    post_install: |
+      systemctl enable wg-quick@wg0
+
+config:
+  files:
+    - path: "/etc/wireguard/wg0.conf"
+      template: "wg0.conf"
+      description: "WireGuard interface configuration"
+
+commands:
+  start: "systemctl start wg-quick@wg0"
+  stop: "systemctl stop wg-quick@wg0"
+  status: "wg show"
+  genkey: "wg genkey"
+
+support:
+  docs: "https://www.wireguard.com/"

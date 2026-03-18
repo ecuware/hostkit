@@ -1,0 +1,53 @@
+id: nginx
+category: webserver
+name: "Nginx"
+description: "High-performance web server and reverse proxy"
+icon: "🌐"
+
+version:
+  current: "1.25"
+  source:
+    type: "github_release"
+    owner: "nginx"
+    repo: "nginx"
+
+requirements:
+  install_size: "50MB"
+  estimated_time: "30 seconds"
+  ports: [80, 443]
+  
+install:
+  ubuntu:
+    method: "apt"
+    packages:
+      - nginx
+      - nginx-extras
+      
+  centos:
+    method: "yum"
+    repositories:
+      - name: "nginx"
+        url: "http://nginx.org/packages/centos/$releasever/$basearch/"
+        gpgcheck: true
+    packages:
+      - nginx
+
+config:
+  files:
+    - path: "/etc/nginx/nginx.conf"
+      template: "nginx.conf"
+    - path: "/etc/nginx/sites-available/default"
+      template: "default-site.conf"
+
+modules:
+  available:
+    - brotli
+    - headers-more
+    - geoip2
+    - lua
+
+commands:
+  start: "systemctl start nginx"
+  stop: "systemctl stop nginx"
+  reload: "nginx -s reload"
+  test: "nginx -t"

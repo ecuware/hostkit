@@ -1,0 +1,74 @@
+id: aapanel
+name: "aaPanel"
+category: panel
+description: "Simple and lightweight hosting control panel"
+icon: "🎛️"
+
+version:
+  current: "7.0"
+  source:
+    type: "github_release"
+    owner: "aaPanel"
+    repo: "aaPanel"
+    asset_pattern: 'install_(.+)\.sh'
+    fallback_url: "http://www.aapanel.com/script/install_en.sh"
+
+requirements:
+  os:
+    ubuntu: ["18.04", "20.04", "22.04", "24.04"]
+    centos: ["7", "8", "9"]
+    debian: ["10", "11", "12"]
+  min_ram: "1GB"
+  min_disk: "5GB"
+  install_size: "2GB"
+  estimated_time: "3-5 minutes"
+  ports: [8888, 888, 443, 80]
+  architecture: ["amd64", "arm64"]
+
+install:
+  method: "shell"
+  script: |
+    URL="http://www.aapanel.com/script/install_{{ .Version }}_en.sh"
+    if ! wget -O install.sh "$URL" 2>/dev/null; then
+      wget -O install.sh "http://www.aapanel.com/script/install_en.sh"
+    fi
+    bash install.sh -y
+  pre_check:
+    - command: "which wget"
+      error_msg: "wget is required"
+  post_check:
+    - service: "bt"
+      port: 8888
+      timeout: 60
+
+dependencies:
+  optional:
+    - nginx
+    - apache
+    - mariadb
+    - mysql
+    - postgresql
+    - redis
+    - php
+
+config:
+  files:
+    - path: "/www/server/panel/data/port.pl"
+      description: "Panel port"
+    - path: "/www/server/panel/data/admin_path.pl"
+      description: "Secure login path"
+
+uninstall:
+  command: |
+    /etc/init.d/bt stop
+    rm -rf /www/server/panel
+    rm -f /etc/init.d/bt
+
+license:
+  required: false
+  type: "free"
+
+support:
+  docs: "https://doc.aapanel.com/"
+  forum: "https://forum.aapanel.com/"
+  issues: "https://github.com/aaPanel/aaPanel/issues"

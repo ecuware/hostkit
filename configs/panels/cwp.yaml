@@ -1,0 +1,51 @@
+id: cwp
+category: panel
+name: "CentOS Web Panel"
+description: "Free Linux web hosting control panel"
+icon: "🌐"
+
+version:
+  current: "0.9"
+  source:
+    type: "static"
+
+requirements:
+  os:
+    centos: ["7", "8"]
+    almalinux: ["8", "9"]
+    rockylinux: ["8", "9"]
+  min_ram: "2GB"
+  min_disk: "20GB"
+  install_size: "2GB"
+  estimated_time: "5-10 minutes"
+  ports: [2030, 2031, 80, 443, 21, 25, 110, 143, 465, 587, 993, 995]
+  architecture: ["amd64"]
+
+install:
+  method: "shell"
+  script: |
+    cd /usr/local/src
+    wget http://centos-webpanel.com/cwp-el7-latest
+    sh cwp-el7-latest
+  pre_check:
+    - command: "hostname -f"
+      error_msg: "Valid FQDN hostname is required"
+
+config:
+  files:
+    - path: "/usr/local/cwpsrv/conf/cwp.conf"
+      description: "CWP configuration"
+    - path: "/usr/local/cwp/.conf/"
+      description: "CWP settings"
+
+commands:
+  restart: "systemctl restart cwpsrv"
+  status: "systemctl status cwpsrv"
+
+license:
+  required: false
+  type: "free"
+
+support:
+  docs: "https://wiki.centos-webpanel.com/"
+  forum: "http://forum.centos-webpanel.com/"

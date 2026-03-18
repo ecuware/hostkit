@@ -1,0 +1,37 @@
+id: hestia
+category: panel
+name: "Hestia Control Panel"
+description: "Lightweight and open source web hosting control panel"
+icon: "🅷️"
+
+version:
+  current: "1.8"
+  source:
+    type: "github_release"
+    owner: "hestiacp"
+    repo: "hestiacp"
+
+requirements:
+  os:
+    ubuntu: ["20.04", "22.04", "24.04"]
+    debian: ["11", "12"]
+  min_ram: "1GB"
+  min_disk: "10GB"
+  install_size: "1GB"
+  estimated_time: "3-5 minutes"
+  ports: [8083, 443, 80]
+
+install:
+  method: "shell"
+  script: |
+    wget https://raw.githubusercontent.com/hestiacp/hestiacp/release/install/hst-install.sh
+    bash hst-install.sh --interactive yes
+
+license:
+  required: false
+  type: "gpl"
+
+support:
+  docs: "https://hestiacp.com/docs/"
+  forum: "https://forum.hestiacp.com/"
+  issues: "https://github.com/hestiacp/hestiacp/issues"

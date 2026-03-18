@@ -1,0 +1,38 @@
+id: fail2ban
+category: security
+name: "Fail2ban"
+description: "Intrusion prevention framework that scans log files and bans IPs"
+icon: "🛡️"
+
+version:
+  current: "1.0"
+  source:
+    type: "static"
+
+requirements:
+  install_size: "50MB"
+  estimated_time: "30 seconds"
+  ports: []
+
+install:
+  ubuntu:
+    method: "apt"
+    packages:
+      - fail2ban
+    post_install: |
+      systemctl enable fail2ban
+      systemctl start fail2ban
+
+config:
+  files:
+    - path: "/etc/fail2ban/jail.local"
+      template: "jail.local"
+    - path: "/etc/fail2ban/jail.d/custom.conf"
+      description: "Custom jail configuration"
+
+commands:
+  status: "fail2ban-client status"
+  unban: "fail2ban-client set sshd unbanip {IP}"
+
+support:
+  docs: "https://www.fail2ban.org/wiki/index.php/Main_Page"

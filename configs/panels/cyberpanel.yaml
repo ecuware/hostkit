@@ -1,0 +1,46 @@
+id: cyberpanel
+category: panel
+name: "CyberPanel"
+description: "Hosting panel powered by OpenLiteSpeed"
+icon: "⚡"
+
+version:
+  current: "2.3"
+  source:
+    type: "github_release"
+    owner: "usmannasir"
+    repo: "cyberpanel"
+
+requirements:
+  os:
+    ubuntu: ["20.04", "22.04"]
+    centos: ["7", "8"]
+    almalinux: ["8", "9"]
+  min_ram: "2GB"
+  min_disk: "20GB"
+  install_size: "3GB"
+  estimated_time: "10-15 minutes"
+  ports: [8090, 7080, 443, 80, 21]
+
+install:
+  method: "shell"
+  url: "https://cyberpanel.net/install.sh"
+  args:
+    - "--version {{ .Version }}"
+    - "--password {{ .AdminPassword | default 'random' }}"
+
+dependencies:
+  required:
+    - litespeed
+  optional:
+    - mariadb
+    - postgresql
+    - redis
+    - memcached
+
+license:
+  required: false
+  type: "open_source"
+
+support:
+  docs: "https://docs.cyberpanel.net/"

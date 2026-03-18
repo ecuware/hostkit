@@ -1,0 +1,35 @@
+id: redis
+category: database
+name: "Redis"
+description: "In-memory data structure store"
+icon: "🔴"
+
+version:
+  current: "7.2"
+  source:
+    type: "github_release"
+    owner: "redis"
+    repo: "redis"
+
+requirements:
+  install_size: "50MB"
+  estimated_time: "30 seconds"
+  min_ram: "256MB"
+  ports: [6379]
+
+install:
+  ubuntu:
+    method: "apt"
+    packages:
+      - redis-server
+      - redis-tools
+
+config:
+  files:
+    - path: "/etc/redis/redis.conf"
+      template: "redis.conf"
+
+commands:
+  start: "systemctl start redis"
+  stop: "systemctl stop redis"
+  status: "redis-cli ping"

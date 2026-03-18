@@ -1,0 +1,44 @@
+id: mongodb
+category: database
+name: "MongoDB"
+description: "Document-oriented NoSQL database"
+icon: "🍃"
+
+version:
+  current: "7.0"
+  source:
+    type: "url_scrape"
+    url: "https://www.mongodb.com/try/download/community"
+    regex: "MongoDB (\\d+\\.\\d+)"
+
+requirements:
+  install_size: "800MB"
+  estimated_time: "2-3 minutes"
+  min_ram: "2GB"
+  ports: [27017]
+
+install:
+  ubuntu:
+    method: "apt"
+    repositories:
+      - name: "mongodb"
+        url: "https://repo.mongodb.org/apt/ubuntu {{ .Codename }}/mongodb-org/{{ .MajorVersion }} multiverse"
+        key: "https://www.mongodb.org/static/pgp/server-{{ .MajorVersion }}.asc"
+    packages:
+      - mongodb-org
+    post_install: |
+      systemctl enable mongod
+      systemctl start mongod
+
+config:
+  files:
+    - path: "/etc/mongod.conf"
+      description: "MongoDB configuration"
+
+commands:
+  start: "systemctl start mongod"
+  stop: "systemctl stop mongod"
+  status: "systemctl status mongod"
+
+support:
+  docs: "https://docs.mongodb.com/"
