@@ -52,9 +52,9 @@ hostkit install mariadb
 hostkit install aapanel
 ```
 
-## 📦 Supported Packages
+## 📦 Supported Packages (26 Total)
 
-### 🎛️ Hosting Panels
+### 🎛️ Hosting Panels (7)
 | Package | Description | Install Size | Time |
 |---------|-------------|--------------|------|
 | **aaPanel** | Simple and lightweight control panel | 2GB | 3-5 min |
@@ -65,7 +65,7 @@ hostkit install aapanel
 | **CloudPanel** | Modern PHP hosting panel | 1GB | 3-5 min |
 | **CentOS Web Panel** | Free Linux control panel | 2GB | 5-10 min |
 
-### 🗄️ Databases
+### 🗄️ Databases (6)
 | Package | Description | Install Size | Time |
 |---------|-------------|--------------|------|
 | **MariaDB** | MySQL-compatible database | 200MB | 1-2 min |
@@ -73,28 +73,34 @@ hostkit install aapanel
 | **PostgreSQL** | Advanced relational database | 300MB | 1-2 min |
 | **MongoDB** | Document-oriented NoSQL | 800MB | 2-3 min |
 | **Redis** | In-memory data store | 50MB | 30 sec |
+| **phpMyAdmin** | Web-based MySQL/MariaDB management | 100MB | 1 min |
 
-### 🌐 Web Servers
+### 🌐 Web Servers (3)
 | Package | Description | Install Size | Time |
 |---------|-------------|--------------|------|
 | **Nginx** | High-performance web server | 50MB | 30 sec |
 | **OpenLiteSpeed** | Lightweight HTTP server | 150MB | 1-2 min |
 | **PHP** | Multi-version PHP with FPM | 200MB | 1-2 min |
 
-### 🔒 Security Tools
+### 🔒 Security Tools (3)
 - **Fail2ban** - Intrusion prevention framework
 - **CSF** - ConfigServer Security & Firewall  
 - **Certbot** - Free SSL certificates (Let's Encrypt)
 
-### ⚙️ Services
+### ⚙️ Services (4)
 - **Docker** - Container platform
 - **Portainer** - Docker management UI
+- **Nginx Proxy Manager** - GUI-based reverse proxy
+- **Email Server Stack** - Postfix + Dovecot + Roundcube
 
-### 📊 Monitoring
+### 📊 Monitoring (1)
 - **Netdata** - Real-time performance monitoring
 
-### 🔐 VPN
+### 🔐 VPN (1)
 - **WireGuard** - Modern, fast, secure VPN tunnel
+
+### 🖥️ Cluster Management (1)
+- **Cluster Manager** - Multi-server SSH orchestration
 
 ## 🖥️ System Monitor
 
@@ -240,19 +246,31 @@ hostkit/
 
 ## 🗺️ Roadmap
 
+- [x] **Multi-Server Management** - SSH cluster orchestration ✅
+- [x] **Email Server Stack** - Postfix, Dovecot, Roundcube ✅
+- [x] **phpMyAdmin** - Web-based database management ✅
 - [ ] **Web UI Dashboard** - Browser-based management interface
-- [ ] **SSH Remote Management** - Manage multiple servers
 - [ ] **WordPress Toolkit** - One-click WP installation
-- [ ] **Email Server Stack** - Postfix, Dovecot, Roundcube
 - [ ] **SSL Automation** - Auto-renewal and deployment
 - [ ] **Backup Automation** - Scheduled backups to cloud
 - [ ] **Ansible Integration** - Infrastructure as code
 - [ ] **Plugin System** - Third-party package support
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the [docs/](docs/) directory:
+
+- **[Usage Guide](docs/guides/USAGE.md)** - Complete user guide with examples
+- **[Contributing](docs/CONTRIBUTING.md)** - How to contribute to HostKit
+- **[Architecture](docs/architecture/ARCHITECTURE.md)** - Technical architecture overview
+- **[Development Setup](docs/development/DEVELOPMENT.md)** - Set up your development environment
+- **[Creating Packages](docs/development/CREATING_PACKAGES.md)** - Add new packages
+
 ## 🤝 Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for detailed guidelines.
 
+**Quick Start:**
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
@@ -267,7 +285,7 @@ Want to add support for a new package? It's easy!
 2. Test it locally
 3. Submit a PR
 
-See [ADDING_PACKAGES.md](ADDING_PACKAGES.md) for detailed guide.
+See [Creating Packages](docs/development/CREATING_PACKAGES.md) for detailed guide.
 
 ## 📄 License
 
@@ -283,7 +301,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 💬 Support
 
-- 📖 **Documentation**: [GitHub Pages](https://ecuware.github.io/hostkit)
+- 📖 **Documentation**: See [docs/](docs/) directory
 - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/ecuware/hostkit/issues)
 - 💡 **Feature Requests**: [GitHub Discussions](https://github.com/ecuware/hostkit/discussions)
 
