@@ -1,0 +1,148 @@
+id: cluster-manager
+name: "Cluster Manager"
+category: cluster
+description: "Multi-server SSH management and orchestration tool"
+icon: "🖥️"
+
+version:
+  current: "1.0.0"
+  source:
+    type: static
+    version: "1.0.0"
+
+requirements:
+  os:
+    ubuntu: ["20.04", "22.04", "24.04"]
+    debian: ["11", "12"]
+  min_ram: "256MB"
+  min_disk: "100MB"
+  install_size: "50MB"
+  estimated_time: "1 minute"
+
+install:
+  method: shell
+  script: |
+    #!/bin/bash
+    set -e
+    
+    echo "Setting up Cluster Manager..."
+    
+    # Create cluster configuration directory
+    sudo mkdir -p /etc/hostkit/cluster
+    sudo mkdir -p /root/.ssh/cluster_keys
+    
+    # Generate master SSH key for cluster management
+    if [ ! -f /root/.ssh/cluster_keys/master_key ]; then
+      echo "Generating master SSH key for cluster management..."
+      sudo ssh-keygen -t ed25519 -f /root/.ssh/cluster_keys/master_key -N "" -C "hostkit-cluster-master"
+    fi
+    
+    # Create default cluster config template
+    sudo tee /etc/hostkit/cluster/servers.yaml.example > /dev/null <<'EOF'
+    # Cluster Manager Configuration
+    # Add your remote servers here
+    
+    clusters:
+      - name: "production"
+        description: "Production Servers"
+        servers:
+          - name: "web-01"
+            host: "192.168.1.101"
+            port: 22
+            user: "root"
+            tags: ["web", "production"]
+          
+          - name: "web-02"
+            host: "192.168.1.102"
+            port: 22
+            user: "root"
+            tags: ["web", "production"]
+          
+          - name: "db-01"
+            host: "192.168.1.201"
+            port: 22
+            user: "root"
+            tags: ["database", "production"]
+      
+      - name: "staging"
+        description: "Staging Environment"
+        servers:
+          - name: "staging-01"
+            host: "10.0.0.50"
+            port: 22
+            user: "admin"
+            tags: ["staging"]
+    
+    # Global settings
+    settings:
+      parallel_limit: 5
+      timeout: 30
+      key_path: "/root/.ssh/cluster_keys/master_key"
+    EOF
+    
+    # Set permissions
+    sudo chmod 700 /root/.ssh/cluster_keys
+    sudo chmod 600 /root/.ssh/cluster_keys/master_key
+    sudo chmod 644 /root/.ssh/cluster_keys/master_key.pub
+    sudo chmod 644 /etc/hostkit/cluster/servers.yaml.example
+    
+    echo "Cluster Manager setup complete!"
+
+dependencies: []
+conflicts: []
+
+post_install:
+  message: |
+    Cluster Manager installed!
+    
+    SETUP INSTRUCTIONS:
+    
+    1. Copy and edit configuration:
+       sudo cp /etc/hostkit/cluster/servers.yaml.example /etc/hostkit/cluster/servers.yaml
+       sudo nano /etc/hostkit/cluster/servers.yaml
+    
+    2. Add your servers to the config file with:
+       - IP addresses or hostnames
+       - SSH users
+       - Tags for grouping
+    
+    3. Distribute SSH key to remote servers:
+       # For each server, run:
+       ssh-copy-id -i /root/.ssh/cluster_keys/master_key.pub root@SERVER_IP
+       
+       # Or use the automated setup:
+       hostkit cluster setup-keys
+    
+    4. Test connections:
+       hostkit cluster ping
+    
+    COMMANDS:
+    
+    List all servers:
+      hostkit cluster list
+    
+    Check status of all servers:
+      hostkit cluster status
+    
+    Execute command on all servers:
+      hostkit cluster exec "apt update" --all
+    
+    Execute on specific group:
+      hostkit cluster exec "systemctl restart nginx" --tags web
+    
+    Install package on multiple servers:
+      hostkit cluster install nginx --all
+      hostkit cluster install mariadb --tags database
+    
+    Parallel execution:
+      hostkit cluster exec "reboot" --all --parallel
+    
+    File transfer:
+      hostkit cluster upload /local/file.conf /etc/nginx/ --all
+      hostkit cluster download /var/log/syslog ./logs/ --servers web-01,web-02
+    
+    Configuration: /etc/hostkit/cluster/servers.yaml
+    SSH Key: /root/.ssh/cluster_keys/master_key
+    
+    NOTE: Always test with single server first before bulk operations!
+  show_logs: false
