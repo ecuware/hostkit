@@ -1,0 +1,188 @@
+id: phpmyadmin
+name: "phpMyAdmin"
+category: database
+description: "Web-based MySQL and MariaDB administration tool"
+icon: "🐘"
+
+version:
+  current: "5.2.1"
+  source:
+    type: "github_release"
+    owner: "phpmyadmin"
+    repo: "phpmyadmin"
+    asset_regex: "phpMyAdmin-([\\d.]+)-all-languages\\.tar\\.gz"
+
+requirements:
+  os:
+    ubuntu: ["20.04", "22.04", "24.04"]
+    debian: ["11", "12"]
+  min_ram: "256MB"
+  min_disk: "200MB"
+  install_size: "150MB"
+  estimated_time: "2-3 minutes"
+  ports: [80, 443]
+
+dependencies:
+  - mariadb
+  - php
+
+conflicts: []
+
+install:
+  method: shell
+  script: |
+    #!/bin/bash
+    set -e
+    
+    echo "Installing phpMyAdmin..."
+    
+    # Install dependencies
+    sudo apt-get update
+    sudo apt-get install -y apache2 php php-mysqli php-mbstring php-zip php-gd php-json php-curl
+    
+    # Download phpMyAdmin
+    PHPMYADMIN_VERSION="5.2.1"
+    cd /tmp
+    wget -q "https://files.phpmyadmin.net/phpMyAdmin/${PHPMYADMIN_VERSION}/phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages.tar.gz"
+    
+    # Extract
+    sudo rm -rf /usr/share/phpmyadmin
+    sudo tar -xzf "phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages.tar.gz" -C /usr/share/
+    sudo mv "/usr/share/phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages" /usr/share/phpmyadmin
+    
+    # Create config directory
+    sudo mkdir -p /var/lib/phpmyadmin/tmp
+    sudo chown -R www-data:www-data /var/lib/phpmyadmin
+    
+    # Create blowfish secret
+    BLOWFISH_SECRET=$(openssl rand -base64 32)
+    
+    # Create configuration
+    sudo tee /usr/share/phpmyadmin/config.inc.php > /dev/null <<EOF
+    <?php
+    // phpMyAdmin Configuration
+    \$cfg['blowfish_secret'] = '${BLOWFISH_SECRET}';
+    
+    // Servers configuration
+    \$i = 0;
+    
+    // First server: localhost
+    \$i++;
+    \$cfg['Servers'][\$i]['verbose'] = 'Local MySQL';
+    \$cfg['Servers'][\$i]['host'] = 'localhost';
+    \$cfg['Servers'][\$i]['port'] = '';
+    \$cfg['Servers'][\$i]['socket'] = '';
+    \$cfg['Servers'][\$i]['auth_type'] = 'cookie';
+    \$cfg['Servers'][\$i]['user'] = '';
+    \$cfg['Servers'][\$i]['password'] = '';
+    \$cfg['Servers'][\$i]['AllowNoPassword'] = false;
+    \$cfg['Servers'][\$i]['AllowRoot'] = true;
+    \$cfg['Servers'][\$i]['ssl'] = false;
+    \$cfg['Servers'][\$i]['compress'] = false;
+    \$cfg['Servers'][\$i]['AllowDeny']['order'] = '';
+    \$cfg['Servers'][\$i]['AllowDeny']['rules'] = array();
+    
+    // Directories for saving/loading files from server
+    \$cfg['UploadDir'] = '';
+    \$cfg['SaveDir'] = '';
+    \$cfg['TempDir'] = '/var/lib/phpmyadmin/tmp';
+    
+    // Security settings
+    \$cfg['LoginCookieValidity'] = 1440;
+    \$cfg['LoginCookieStore'] = 0;
+    \$cfg['MaxRows'] = 50;
+    \$cfg['SendErrorReports'] = 'never';
+    
+    // Appearance
+    \$cfg['ThemeDefault'] = 'pmahomme';
+    \$cfg['ThemeManager'] = true;
+    \$cfg['DefaultLang'] = 'en';
+    ?>
+    EOF
+    
+    # Create Apache configuration
+    sudo tee /etc/apache2/conf-available/phpmyadmin.conf > /dev/null <<EOF
+    # phpMyAdmin Apache Configuration
+    Alias /phpmyadmin /usr/share/phpmyadmin
+    
+    <Directory /usr/share/phpmyadmin>
+        Options SymLinksIfOwnerMatch
+        DirectoryIndex index.php
+        AllowOverride All
+        Require all granted
+    </Directory>
+    
+    <Directory /usr/share/phpmyadmin/templates>
+        Require all denied
+    </Directory>
+    
+    <Directory /usr/share/phpmyadmin/libraries>
+        Require all denied
+    </Directory>
+    
+    <Directory /var/lib/phpmyadmin/tmp>
+        Require all denied
+    </Directory>
+    EOF
+    
+    # Enable configuration
+    sudo a2enconf phpmyadmin
+    sudo a2enmod rewrite
+    
+    # Restart Apache
+    sudo systemctl restart apache2
+    
+    # Configure firewall
+    if command -v ufw &> /dev/null; then
+        sudo ufw allow 80/tcp
+        sudo ufw allow 443/tcp
+    fi
+    
+    # Clean up
+    rm -f "/tmp/phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages.tar.gz"
+    
+    echo "phpMyAdmin installation complete!"
+
+post_install:
+  message: |
+    phpMyAdmin installed successfully!
+    
+    Access URL: http://YOUR_SERVER_IP/phpmyadmin
+    
+    LOGIN CREDENTIALS:
+    Use your MySQL/MariaDB credentials:
+    - Username: root (or your MySQL user)
+    - Password: Your MySQL password
+    
+    IMPORTANT SECURITY NOTES:
+    
+    1. Restrict Access (Recommended):
+       Edit /etc/apache2/conf-available/phpmyadmin.conf
+       Change "Require all granted" to:
+       Require ip YOUR_IP_ADDRESS
+    
+    2. Use SSL:
+       Install Certbot: hostkit install certbot
+       sudo certbot --apache
+    
+    3. Change MySQL root password if not set:
+       sudo mysql_secure_installation
+    
+    4. Create a dedicated phpMyAdmin user:
+       mysql -u root -p
+       CREATE USER 'phpmyadmin'@'localhost' IDENTIFIED BY 'strong_password';
+       GRANT ALL PRIVILEGES ON *.* TO 'phpmyadmin'@'localhost' WITH GRANT OPTION;
+       FLUSH PRIVILEGES;
+    
+    Features:
+    - Manage databases, tables, columns, indexes
+    - Execute SQL queries
+    - Import/Export databases (SQL, CSV, Excel)
+    - User and privilege management
+    - Database designer
+    - Query builder
+    
+    Configuration file: /usr/share/phpmyadmin/config.inc.php
+    
+    For help: https://docs.phpmyadmin.net/
+  show_logs: false
