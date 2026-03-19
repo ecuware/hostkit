@@ -1,0 +1,122 @@
+:root {
+  --md-primary-fg-color: #4051b5;
+  --md-primary-fg-color--light: #5d6cc0;
+  --md-primary-fg-color--dark: #303fa1;
+  --md-accent-fg-color: #526cfe;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--md-default-bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--md-default-fg-color--lighter);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--md-default-fg-color--light);
+}
+
+/* Better code blocks */
+.md-typeset pre {
+  border-radius: 8px;
+}
+
+.md-typeset code {
+  border-radius: 4px;
+  padding: 0.2em 0.4em;
+}
+
+/* Hero section styling */
+.md-header__title {
+  font-weight: 700;
+}
+
+/* Improve table readability */
+.md-typeset table:not([class]) {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--md-primary-fg-color);
+  color: white;
+  font-weight: 600;
+}
+
+/* Admonition styling */
+.md-typeset .admonition {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Grid cards */
+.grid.cards {
+  gap: 1rem;
+}
+
+.grid.cards > ul > li {
+  border-radius: 12px;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.grid.cards > ul > li:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Typography improvements */
+.md-typeset h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.md-typeset h2 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Custom icons sizing */
+.lg {
+  font-size: 2.5rem;
+}
+
+.middle {
+  vertical-align: middle;
+}
+
+/* Search highlight */
+.md-search-result mark {
+  background-color: rgba(82, 108, 254, 0.2);
+  color: var(--md-default-fg-color);
+  font-weight: 600;
+}
+
+/* Footer styling */
+.md-footer {
+  background-color: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+}
+
+.md-footer-meta {
+  background-color: var(--md-primary-fg-color--dark);
+}
+
+/* Tabbed content */
+.md-typeset .tabbed-content {
+  border-radius: 0 0 8px 8px;
+}
+
+/* Mermaid diagrams */
+.mermaid {
+  text-align: center;
+}
