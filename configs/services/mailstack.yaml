@@ -1,0 +1,221 @@
+id: mailstack
+name: "Email Server Stack"
+category: services
+description: "Complete email server with Postfix (MTA), Dovecot (IMAP/POP3), and Roundcube (Webmail)"
+icon: "📧"
+
+version:
+  current: "latest"
+  source:
+    type: static
+    version: "latest"
+
+requirements:
+  os:
+    ubuntu: ["20.04", "22.04", "24.04"]
+    debian: ["11", "12"]
+  min_ram: "2GB"
+  min_disk: "5GB"
+  install_size: "2GB"
+  estimated_time: "10-15 minutes"
+  ports: [25, 465, 587, 110, 143, 993, 995, 80, 443]
+
+install:
+  method: shell
+  script: |
+    #!/bin/bash
+    set -e
+    
+    echo "Installing Email Server Stack (Postfix + Dovecot + Roundcube)..."
+    
+    # Update system
+    sudo apt-get update
+    
+    # Set non-interactive mode for Postfix
+    sudo debconf-set-selections <<< "postfix postfix/mailname string $(hostname -f)"
+    sudo debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
+    
+    # Install Postfix
+    echo "Installing Postfix..."
+    sudo apt-get install -y postfix postfix-pcre
+    
+    # Install Dovecot
+    echo "Installing Dovecot..."
+    sudo apt-get install -y dovecot-core dovecot-imapd dovecot-pop3d dovecot-lmtpd dovecot-mysql
+    
+    # Install Roundcube dependencies
+    echo "Installing Roundcube dependencies..."
+    sudo apt-get install -y apache2 php php-{mbstring,xml,json,mysql,imap,ldap,curl,gd,intl,bz2,zip}
+    
+    # Install MariaDB if not present
+    if ! command -v mysql &> /dev/null; then
+      echo "Installing MariaDB..."
+      sudo apt-get install -y mariadb-server
+      sudo systemctl enable mariadb
+      sudo systemctl start mariadb
+      
+      # Secure MariaDB
+      sudo mysql -e "UPDATE mysql.user SET plugin='mysql_native_password' WHERE User='root';"
+      sudo mysql -e "DELETE FROM mysql.user WHERE User='';"
+      sudo mysql -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
+      sudo mysql -e "DROP DATABASE IF EXISTS test;"
+      sudo mysql -e "FLUSH PRIVILEGES;"
+    fi
+    
+    # Install Roundcube
+    echo "Installing Roundcube..."
+    sudo apt-get install -y roundcube roundcube-core roundcube-mysql roundcube-plugins
+    
+    # Configure Apache for Roundcube
+    sudo tee /etc/apache2/conf-available/roundcube.conf > /dev/null <<EOF
+    Alias /webmail /var/lib/roundcube
+    
+    <Directory /var/lib/roundcube>
+      Options FollowSymLinks
+      AllowOverride All
+      Require all granted
+    </Directory>
+    EOF
+    
+    sudo a2enconf roundcube
+    sudo a2enmod rewrite
+    sudo systemctl restart apache2
+    
+    # Configure Postfix
+    echo "Configuring Postfix..."
+    sudo postconf -e "home_mailbox = Maildir/"
+    sudo postconf -e "mailbox_command ="
+    sudo postconf -e "smtpd_sasl_type = dovecot"
+    sudo postconf -e "smtpd_sasl_path = private/auth"
+    sudo postconf -e "smtpd_sasl_auth_enable = yes"
+    sudo postconf -e "smtpd_sasl_security_options = noanonymous"
+    sudo postconf -e "smtpd_sasl_local_domain = \$myhostname"
+    sudo postconf -e "broken_sasl_auth_clients = yes"
+    sudo postconf -e "smtpd_recipient_restrictions = permit_sasl_authenticated,permit_mynetworks,reject_unauth_destination"
+    sudo postconf -e "inet_interfaces = all"
+    
+    # Configure Dovecot
+    echo "Configuring Dovecot..."
+    sudo tee /etc/dovecot/conf.d/10-mail.conf > /dev/null <<EOF
+    mail_location = maildir:~/Maildir
+    namespace inbox {
+      inbox = yes
+    }
+    EOF
+    
+    sudo tee /etc/dovecot/conf.d/10-auth.conf > /dev/null <<EOF
+    disable_plaintext_auth = no
+    auth_mechanisms = plain login
+    EOF
+    
+    sudo tee /etc/dovecot/conf.d/10-master.conf > /dev/null <<EOF
+    service auth {
+      unix_listener /var/spool/postfix/private/auth {
+        mode = 0666
+        user = postfix
+        group = postfix
+      }
+    }
+    
+    service imap-login {
+      inet_listener imap {
+        port = 143
+      }
+      inet_listener imaps {
+        port = 993
+        ssl = yes
+      }
+    }
+    
+    service pop3-login {
+      inet_listener pop3 {
+        port = 110
+      }
+      inet_listener pop3s {
+        port = 995
+        ssl = yes
+      }
+    }
+    EOF
+    
+    # Enable and start services
+    sudo systemctl enable postfix
+    sudo systemctl enable dovecot
+    sudo systemctl restart postfix
+    sudo systemctl restart dovecot
+    
+    # Create initial user
+    echo "Creating initial email user..."
+    read -p "Enter email username (e.g., admin): " email_user
+    if [ -n "$email_user" ]; then
+      sudo useradd -m "$email_user" 2>/dev/null || echo "User already exists"
+      sudo passwd "$email_user"
+    fi
+    
+    # Open firewall ports
+    if command -v ufw &> /dev/null; then
+      echo "Configuring firewall..."
+      sudo ufw allow 25/tcp    # SMTP
+      sudo ufw allow 465/tcp   # SMTPS
+      sudo ufw allow 587/tcp   # Submission
+      sudo ufw allow 110/tcp   # POP3
+      sudo ufw allow 143/tcp   # IMAP
+      sudo ufw allow 993/tcp   # IMAPS
+      sudo ufw allow 995/tcp   # POP3S
+      sudo ufw allow 80/tcp    # HTTP
+      sudo ufw allow 443/tcp   # HTTPS
+    fi
+    
+    echo "Email Server Stack installation complete!"
+
+dependencies:
+  - mariadb
+
+conflicts: []
+
+post_install:
+  message: |
+    Email Server Stack installed successfully!
+    
+    Components Installed:
+    - Postfix (SMTP Server) - Ports 25, 465, 587
+    - Dovecot (IMAP/POP3) - Ports 110, 143, 993, 995
+    - Roundcube (Webmail) - Port 80/443
+    - MariaDB (Database)
+    
+    Webmail Access: http://YOUR_IP/webmail
+    
+    IMPORTANT SETUP REQUIRED:
+    
+    1. Configure DNS Records:
+       - MX record: YOUR_DOMAIN -> YOUR_SERVER_IP
+       - A record: mail.YOUR_DOMAIN -> YOUR_SERVER_IP
+       - SPF record: v=spf1 mx a:YOUR_DOMAIN ~all
+       - DKIM: Generate using opendkim (recommended)
+    
+    2. Set Hostname:
+       sudo hostnamectl set-hostname mail.YOUR_DOMAIN
+    
+    3. Update Postfix:
+       sudo postconf -e "myhostname = mail.YOUR_DOMAIN"
+       sudo postconf -e "mydomain = YOUR_DOMAIN"
+       sudo systemctl restart postfix
+    
+    4. Configure SSL (Recommended):
+       Install Certbot: hostkit install certbot
+       sudo certbot --apache -d mail.YOUR_DOMAIN
+    
+    5. Create Email Users:
+       sudo adduser username
+       # Password will be used for email authentication
+    
+    6. Test Email:
+       - Send test email: echo "Test" | mail -s "Subject" user@yourdomain.com
+       - Check webmail: http://YOUR_IP/webmail
+    
+    Security Notes:
+    - Configure SSL/TLS for production use
+    - Set up SPF, DKIM, and DMARC records
+    - Monitor logs: /var/log/mail.log
+    - Use fail2ban to protect against brute force
+  show_logs: true

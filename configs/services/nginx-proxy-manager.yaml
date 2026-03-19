@@ -1,0 +1,96 @@
+id: nginx-proxy-manager
+name: "Nginx Proxy Manager"
+category: services
+description: "Beautiful web interface for managing Nginx reverse proxy with SSL support"
+icon: "🌐"
+
+version:
+  current: "latest"
+  source:
+    type: static
+    version: "latest"
+
+requirements:
+  os:
+    ubuntu: ["20.04", "22.04", "24.04"]
+    debian: ["11", "12"]
+  min_ram: "512MB"
+  min_disk: "1GB"
+  install_size: "500MB"
+  estimated_time: "2-3 minutes"
+  ports: [80, 81, 443]
+
+install:
+  method: shell
+  script: |
+    #!/bin/bash
+    set -e
+    
+    echo "Installing Nginx Proxy Manager..."
+    
+    # Install Docker if not present
+    if ! command -v docker &> /dev/null; then
+      echo "Docker is required but not installed. Installing Docker first..."
+      curl -fsSL https://get.docker.com | sh
+      sudo usermod -aG docker $USER
+    fi
+    
+    # Create directory
+    sudo mkdir -p /opt/nginx-proxy-manager
+    cd /opt/nginx-proxy-manager
+    
+    # Create Docker Compose file
+    sudo tee docker-compose.yml > /dev/null <<EOF
+    version: '3.8'
+    services:
+      app:
+        image: 'jc21/nginx-proxy-manager:latest'
+        restart: unless-stopped
+        ports:
+          - '80:80'
+          - '81:81'
+          - '443:443'
+        volumes:
+          - ./data:/data
+          - ./letsencrypt:/etc/letsencrypt
+        environment:
+          - TZ=UTC
+    EOF
+    
+    # Start container
+    sudo docker compose up -d
+    
+    # Wait for initialization
+    echo "Waiting for Nginx Proxy Manager to start..."
+    sleep 10
+    
+    # Open firewall ports
+    if command -v ufw &> /dev/null; then
+      sudo ufw allow 80/tcp
+      sudo ufw allow 81/tcp
+      sudo ufw allow 443/tcp
+    fi
+    
+    echo "Nginx Proxy Manager installation complete!"
+
+dependencies:
+  - docker
+
+conflicts: []
+
+post_install:
+  message: |
+    Nginx Proxy Manager installed successfully!
+    
+    Admin Interface: http://YOUR_IP:81
+    Default Email: admin@example.com
+    Default Password: changeme
+    
+    IMPORTANT: Change the default password immediately!
+    
+    Usage:
+    1. Login to admin panel
+    2. Add proxy hosts
+    3. Configure SSL certificates
+    4. Manage redirects and streams
+  show_logs: false
